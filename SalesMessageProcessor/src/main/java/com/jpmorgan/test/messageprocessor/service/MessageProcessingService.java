@@ -25,9 +25,7 @@ import com.jpmorgan.test.messageprocessor.model.MessageType;
  */
 @Service
 public class MessageProcessingService {
-	private static final Logger LOGGER = Logger.getLogger( MessageProcessingService.class.getName() );
 	
-	@Autowired
 	SalesMessagesDao salesMessageDao;
 	
 	@Value("${messages.processed.max-count}")
@@ -36,11 +34,17 @@ public class MessageProcessingService {
 	@Value("${messages.processed.iteration-count}")
 	private Integer iterationCount;
 	
+	@Autowired
+	public MessageProcessingService(SalesMessagesDao salesMessageDao){
+		this.salesMessageDao = salesMessageDao;
+	}
+	
 	/**
 	 * Method to process the sales messages.
 	 */
-    public void processSalesMessages() {
-    	LOGGER.log( Level.INFO, "==> MessageProcessingService Started <==");
+    public Map<Integer, SalesRecord> processSalesMessages() {
+    	Logger logger = Logger.getLogger( MessageProcessingService.class.getName() );
+    	logger.log( Level.INFO, "==> MessageProcessingService Started <==");
 		
 		Map<Integer, SalesRecord> salesRecordMap = new HashMap<Integer, SalesRecord>();
 		
@@ -54,7 +58,8 @@ public class MessageProcessingService {
 			createAndDisplaySalesReport(salesRecordMap, messageList, totalMessages);
 		}
 		
-		LOGGER.log( Level.INFO, "==> MessageProcessingService Completed <==");
+		logger.log( Level.INFO, "==> MessageProcessingService Completed <==");
+		return salesRecordMap;
     }
 
 	private void createAndDisplayReportForEmptyMessageList() {
@@ -89,6 +94,14 @@ public class MessageProcessingService {
 		
 		createAdjustmentsReport(salesRecordMap);
 		createReportFooter();
+	}
+
+	public void setMaxMessagesToBeProcessed(Integer maxMessagesToBeProcessed) {
+		this.maxMessagesToBeProcessed = maxMessagesToBeProcessed;
+	}
+
+	public void setIterationCount(Integer iterationCount) {
+		this.iterationCount = iterationCount;
 	}
 
 	private int generateIterativeReport(int iteration, Map<Integer, SalesRecord> salesRecordMap) {
